@@ -102,7 +102,7 @@ Possible examples:
 - `le`
 
 ```{r choose_variable, echo=TRUE, eval=FALSE}
-target_var <- "___"
+target_var <- "gpp"
 
 # CHECK: does this variable exist?
 target_var %in% names(df)
@@ -112,11 +112,11 @@ target_var %in% names(df)
 
 Write the population parameter you care about:
 
-> $\mu$ = the true 2023 population mean of `___`
+> $\mu$ = the true 2023 population mean of `gpp`
 
 Fill in the blank in words:
 
-> In this lab, my population parameter is the true annual mean of **`___`** at the US-AMS site.
+> In this lab, my population parameter is the true annual mean of **`gross primary production`** at the US-AMS site.
 
 ---
 
@@ -129,6 +129,8 @@ Examples:
 - “The annual mean air temperature is 10 °C.”
 - “The annual mean latent heat flux is 40 W m$^{-2}$.”
 
+*The annual mean gpp is 25 tons of carbon per hectre per year*
+
 Now turn your claim into hypotheses:
 
 - Null hypothesis: $H_0: \mu = \mu_0$
@@ -136,11 +138,13 @@ Now turn your claim into hypotheses:
 
 Fill these in:
 
-> My claim is: `___`
+> My claim is: `The annual mean gpp is 25 tons C / ha / yr`
 
-> $H_0$: `___`
+> $H_0$: 
+        `$H_0: \mu = 25$`
 
-> $H_A$: `___`
+> $H_A$: 
+        `$H_A: \mu \neq 25$`
 
 ---
 
@@ -149,9 +153,9 @@ Fill these in:
 ```{r draw_sample, echo=TRUE, eval=FALSE}
 # GOAL: Draw one random sample and compute its mean.
 
-set.seed(___)
+set.seed(560)
 
-n_samp <- ___   # e.g., 200
+n_samp <- 231   # e.g., 200
 
 samp <- df %>%
   filter(!is.na(.data[[target_var]])) %>%
@@ -164,7 +168,7 @@ sample_mean
 
 **Prompt (2–3 sentences):** How does your sample mean compare to your claim? Is it close, or already quite different?
 
-> *Write your answer here.*
+> *The actual result is very different from my claim. My initial claim was that the mean annual gpp would be 25, while the actual value was ~6*
 
 ---
 
@@ -173,9 +177,9 @@ sample_mean
 ```{r bootstrap_means, echo=TRUE, eval=FALSE}
 # GOAL: Bootstrap the sample mean to estimate uncertainty.
 
-set.seed(___)
+set.seed(5694)
 
-B <- ___   # e.g., 4000
+B <- 3752   # e.g., 4000
 
 boot_means <- replicate(
   B,
@@ -191,7 +195,7 @@ head(boot_means)
 # GOAL: Compute the bootstrap SE and 95% CI.
 
 boot_se <- sd(boot_means)
-boot_ci <- quantile(boot_means, probs = c(___, ___))
+boot_ci <- quantile(boot_means, probs = c(0.025, 0.975))
 
 tibble(
   sample_mean = sample_mean,
@@ -203,7 +207,7 @@ tibble(
 
 **Prompt (2–3 sentences):** What does the bootstrap SE tell you? What does the 95% CI tell you?
 
-> *Write your answer here.*
+> *The standard error tells us about the spread of the bootstrap. A higher SE means a higher spread, and a lower precision. The 95% confidence interval tells us that 95% of the time our sample will fall inbetween the bounds of the interval. A lower difference in upper and lower bounds means higher precision*
 
 ---
 
@@ -214,7 +218,7 @@ Define the null value from your claim.
 ```{r hypothesis_test, echo=TRUE, eval=FALSE}
 # GOAL: Compute z and p-value for your claim.
 
-mu0 <- ___   # numeric claim value
+mu0 <- 25   # numeric claim value
 
 z_stat <- (sample_mean - mu0) / boot_se
 
@@ -241,15 +245,15 @@ Use your p-value and CI to answer:
 
 Fill in:
 
-> The null value `___` is / is not inside my 95% CI.
+> The null value `25` is not inside my 95% CI.
 
-> My p-value is `___`, which is small / large.
+> My p-value is `7.98 * 10^(-185)`, which is small / large.
 
-> Therefore, I would / would not reject $H_0$ at the 0.05 level.
+> Therefore, I would reject $H_0$ at the 0.05 level.
 
 **Prompt (4–6 sentences):** Explain your decision in plain language. Do the data make the claim look plausible or surprising? Be careful: “fail to reject” does not mean “prove true.”
 
-> *Write your answer here.*
+> *My decision to reject the null hypothesis comes from having such a small p-value. Our p-value tells us the likelihood of our suggested mean being the true mean of the population. A higher p-value means that we are more likely to have selected the actual mean value. Because my p-value is so small, the likelihood of my prediction being the actual mean gpp is excessively small as well. Due to this fact I have chosen to reject the "null hypothesis", or the idea that my predicted value is the true value.*
 
 ---
 
@@ -259,7 +263,7 @@ Fill in:
 # GOAL: Plot the bootstrap distribution, sample mean, CI, and null value.
 
 ggplot(tibble(boot_mean = boot_means), aes(x = boot_mean)) +
-  geom_histogram(bins = ___, alpha = 0.8) +
+  geom_histogram(bins = 50, alpha = 0.8) +
   geom_vline(xintercept = sample_mean, linetype = "dashed", linewidth = 1.1) +
   geom_vline(xintercept = boot_ci, color = "red", linewidth = 1.1) +
   geom_vline(xintercept = mu0, color = "blue", linewidth = 1.1) +
@@ -274,7 +278,7 @@ ggplot(tibble(boot_mean = boot_means), aes(x = boot_mean)) +
 
 **Prompt (2–3 sentences):** Does the plot agree with your p-value-based conclusion? Explain.
 
-> *Write your answer here.*
+> *Yes my plot agrees with my conclusion. My plot shows that my predicted value is far higher than the mean, and sits well outside of the 95% confidence interval. The likelihood of the true value being this high is essentially 0.*
 
 ---
 
@@ -285,7 +289,7 @@ Keep the same variable, but test a **different null value**.
 ```{r second_claim, echo=TRUE, eval=FALSE}
 # GOAL: Test a second claim using the same sample and bootstrap SE.
 
-mu0_alt <- ___
+mu0_alt <- 6
 
 z_stat_alt <- (sample_mean - mu0_alt) / boot_se
 p_value_alt <- 2 * pnorm(-abs(z_stat_alt))
@@ -299,7 +303,7 @@ tibble(
 
 **Prompt (3–4 sentences):** How did changing the null value change the conclusion? What does this tell you about the relationship between the null hypothesis and the observed estimate?
 
-> *Write your answer here.*
+> *Changing the null value vastly improved my p-value. This tells me that the relationship between the null hypothesis and the observed estimate is dependant on the predicted null hypothesis. The observed estimate will not change unless more samples are taken, or samples are removed. Thus, the null hypothesis, which is variable and dependent on who is doing the prediction, is the determining factor for their relationship.*
 
 ---
 
