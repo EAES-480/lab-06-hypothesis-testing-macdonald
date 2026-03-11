@@ -307,15 +307,304 @@ tibble(
 
 ---
 
-# Part II — To be added later
+# Part II — Comparing group means with t-tests
 
-We will add additional exercises here on:
+In Part I, you tested a claim about **one population mean**.
 
-- comparing means between groups,
-- one- vs two-sided tests,
-- and connections to t-tests / ANOVA.
+Now you will extend the same logic to compare **two group means**.
 
-> *Instructor will add this section later. Do not delete this header.*
+The key idea is:
+
+> A two-sample t-test asks whether the difference between two group means is large relative to the uncertainty in that difference.
+
+You will first work with a built-in grouping variable (**day vs night**), then choose a second grouping variable of your own.
+
+---
+
+## 11) Create a day/night grouping variable
+
+If you already created `day_night` earlier, you can reuse it. Otherwise, create it here.
+
+```{r make_daynight, echo=TRUE, eval=FALSE}
+# GOAL: create a day/night grouping variable from `daytime`.
+
+df <- df %>%
+  mutate(
+    day_night = if_else(___ == 1, "Day", "Night")
+  ) %>% 
+  filter(!is.na(___))
+
+df %>% count(day_night)
+```
+
+---
+
+## 12) Choose a response variable for the t-test
+
+Pick one numeric response variable to compare between groups.
+
+Possible examples:
+- `ta`
+- `swc`
+- `fc`
+- `gpp`
+- `le`
+
+```{r choose_response_ttest, echo=TRUE, eval=FALSE}
+response_var <- "___"
+
+# CHECK: does this variable exist?
+response_var %in% names(df)
+```
+
+---
+
+## 13) Visualize the response by day/night
+
+Create a plot that shows how your response variable differs between Day and Night.
+
+You may use:
+- `geom_boxplot()`
+- `geom_violin()`
+- `geom_jitter()`
+- or a combination
+
+```{r plot_daynight, echo=TRUE, eval=FALSE}
+# GOAL: visualize the response by day/night group.
+
+df %>%
+  filter(!is.na(.data[[response_var]])) %>%
+  ggplot(aes(x = ___, y = ___, fill = ___)) +
+  geom_boxplot(alpha = 0.8) +
+  theme_classic(base_size = 18) +
+  labs(
+    x = NULL,
+    y = response_var,
+    title = "Response by day vs night"
+  )
+```
+
+**Prompt (2–3 sentences):** Before running the test, what do you predict?  
+Do the groups look different in center? In spread?
+
+> *Write your answer here.*
+
+---
+
+## 14) Summarize the two groups
+
+Compute the group means, SDs, and sample sizes.
+
+```{r summarize_daynight, echo=TRUE, eval=FALSE}
+# GOAL: summarize the response variable by day/night group.
+
+group_summary <- df %>%
+  filter(!is.na(.data[[response_var]])) %>%
+  group_by(___) %>%
+  summarise(
+    mean_response = ___,
+    sd_response = ___,
+    n = ___,
+    .groups = "drop"
+  )
+
+group_summary
+```
+
+---
+
+## 15) State the hypotheses for the day/night comparison
+
+Write hypotheses in words and symbols.
+
+Use this structure:
+
+- Null: the two group means are equal
+- Alternative: the two group means are different
+
+Fill in:
+
+> My response variable is `___`
+
+> $H_0$: `___`
+
+> $H_A$: `___`
+
+---
+
+## 16) Run a two-sample t-test
+
+Use `t.test()` to compare the means of your response variable between Day and Night.
+
+```{r ttest_daynight, echo=TRUE, eval=FALSE}
+# GOAL: run a two-sample t-test by formula.
+
+t.test(
+  ___ ~ ___,
+  data = ___
+)
+```
+
+**Prompt (4–6 sentences):** Report the p-value and confidence interval.  
+Would you reject the null hypothesis at $\alpha = 0.05$?  
+What does the result imply about day vs night differences in your chosen variable?
+
+> *Write your answer here.*
+
+---
+
+## 17) Connect the t-test to a confidence interval
+
+Extract the confidence interval and interpret it as a difference in means.
+
+```{r ttest_store, echo=TRUE, eval=FALSE}
+# GOAL: store the t-test result in an object.
+
+tt_daynight <- t.test(
+  ___ ~ ___,
+  data = ___
+)
+
+tt_daynight$conf.int
+```
+
+**Prompt (2–3 sentences):** Does the confidence interval include 0?  
+How does that connect to the hypothesis test decision?
+
+> *Write your answer here.*
+
+---
+
+## 18) Bootstrap view of the same comparison (conceptual extension)
+
+Create bootstrap distributions of the **group means** for Day and Night separately.
+
+```{r bootstrap_group_means, echo=TRUE, eval=FALSE}
+set.seed(___)
+
+B <- ___   # e.g., 2000
+
+x_day <- df %>%
+  filter(day_night == "Day") %>%
+  pull(___) %>%
+  na.omit()
+
+x_night <- df %>%
+  filter(day_night == "Night") %>%
+  pull(___) %>%
+  na.omit()
+
+boot_day <- replicate(
+  B,
+  mean(sample(x_day, size = length(x_day), replace = TRUE))
+)
+
+boot_night <- replicate(
+  B,
+  mean(sample(x_night, size = length(x_night), replace = TRUE))
+)
+
+boot_groups <- bind_rows(
+  tibble(group = "Day", mean_est = boot_day),
+  tibble(group = "Night", mean_est = boot_night)
+)
+```
+
+```{r plot_boot_groups, echo=TRUE, eval=FALSE}
+# GOAL: visualize the bootstrap distributions by group.
+
+ggplot(boot_groups, aes(x = mean_est, fill = group)) +
+  geom_histogram(alpha = 0.45, bins = ___, position = "identity") +
+  theme_classic(base_size = 18) +
+  labs(
+    x = paste0("Bootstrap mean of ", response_var),
+    y = "Count",
+    title = "Bootstrap distributions of group means"
+  )
+```
+
+**Prompt (3–4 sentences):** How does this bootstrap visualization help you understand the t-test result?  
+Do the plausible group means strongly overlap, or are they clearly separated?
+
+> *Write your answer here.*
+
+---
+
+## 19) Choose a second grouping variable of your own
+
+Now define **one additional grouping variable** and repeat the t-test workflow.
+
+Possible ideas:
+- month grouped into two seasons (e.g., winter vs summer)
+- a high/low split of another continuous variable
+- a wet/dry split of SWC
+- a daytime subset grouped by month category
+
+You must:
+- define the grouping variable clearly
+- explain why the grouping is scientifically meaningful
+
+```{r choose_second_group, echo=TRUE, eval=FALSE}
+# GOAL: create your own two-level grouping variable.
+
+df <- df %>%
+  mutate(
+    my_group = ___
+  )
+
+df %>% count(my_group)
+```
+
+**Prompt (2–3 sentences):** Why did you choose this grouping variable? What scientific contrast are you testing?
+
+> *Write your answer here.*
+
+---
+
+## 20) Visualize and test your second grouping variable
+
+Repeat the workflow:
+1. visualize
+2. summarize
+3. state hypotheses
+4. run `t.test()`
+5. interpret
+
+```{r visualize_second_group, echo=TRUE, eval=FALSE}
+# GOAL: visualize your response by your chosen grouping variable.
+
+___
+```
+
+```{r summarize_second_group, echo=TRUE, eval=FALSE}
+# GOAL: summarize your response variable by your chosen grouping variable.
+
+___
+```
+
+```{r ttest_second_group, echo=TRUE, eval=FALSE}
+# GOAL: run a two-sample t-test for your chosen grouping variable.
+
+___
+```
+
+**Prompt (5–6 sentences):** Compare the day/night t-test to your second grouping-variable test.  
+Which contrast was stronger? Which was more scientifically meaningful?  
+Did the two tests produce similar or different conclusions?
+
+> *Write your answer here.*
+
+---
+
+## 21) Final reflection
+
+Answer in **4–6 sentences**:
+
+- How is a two-sample t-test similar to the one-mean hypothesis test from Part I?
+- What changes when we move from “testing one mean” to “testing a difference in means”?
+- How did the bootstrap group-mean plot help your understanding?
+
+> *Write your answer here.*
 
 ---
 
