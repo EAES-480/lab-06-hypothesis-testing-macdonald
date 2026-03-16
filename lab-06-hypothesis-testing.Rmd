@@ -247,7 +247,7 @@ Fill in:
 
 > The null value `25` is not inside my 95% CI.
 
-> My p-value is `7.98 * 10^(-185)`, which is small / large.
+> My p-value is `7.98 * 10^(-185)`, which is small.
 
 > Therefore, I would reject $H_0$ at the 0.05 level.
 
@@ -330,9 +330,10 @@ If you already created `day_night` earlier, you can reuse it. Otherwise, create 
 
 df <- df %>%
   mutate(
-    day_night = if_else(___ == 1, "Day", "Night")
+    day_night = if_else(daytime == 1, "Day", "Night")
   ) %>% 
-  filter(!is.na(___))
+  filter(!is.na(day_night))
+
 
 df %>% count(day_night)
 ```
@@ -351,7 +352,7 @@ Possible examples:
 - `le`
 
 ```{r choose_response_ttest, echo=TRUE, eval=FALSE}
-response_var <- "___"
+response_var <- "ta"
 
 # CHECK: does this variable exist?
 response_var %in% names(df)
@@ -374,7 +375,7 @@ You may use:
 
 df %>%
   filter(!is.na(.data[[response_var]])) %>%
-  ggplot(aes(x = ___, y = ___, fill = ___)) +
+  ggplot(aes(x = day_night, y = ta, fill = ta)) +
   geom_boxplot(alpha = 0.8) +
   theme_classic(base_size = 18) +
   labs(
@@ -387,7 +388,7 @@ df %>%
 **Prompt (2–3 sentences):** Before running the test, what do you predict?  
 Do the groups look different in center? In spread?
 
-> *Write your answer here.*
+> *The response variable look fairly similar in the center. Although their averages do not line up exactly, they have a lot of overlap in their spread. Because of this I predict that they are not statistically different.*
 
 ---
 
@@ -400,11 +401,11 @@ Compute the group means, SDs, and sample sizes.
 
 group_summary <- df %>%
   filter(!is.na(.data[[response_var]])) %>%
-  group_by(___) %>%
+  group_by(day_night) %>%
   summarise(
-    mean_response = ___,
-    sd_response = ___,
-    n = ___,
+    mean_response = mean(.data[[response_var]]),
+    sd_response = sd(.data[[response_var]]),
+    n = n(),
     .groups = "drop"
   )
 
@@ -424,11 +425,11 @@ Use this structure:
 
 Fill in:
 
-> My response variable is `___`
+> My response variable is `air temperature`
 
-> $H_0$: `___`
+> $H_0$: `The average air temperature is the same at night and during the day`
 
-> $H_A$: `___`
+> $H_A$: `The average air temperature is different during the day and at night`
 
 ---
 
@@ -440,8 +441,8 @@ Use `t.test()` to compare the means of your response variable between Day and Ni
 # GOAL: run a two-sample t-test by formula.
 
 t.test(
-  ___ ~ ___,
-  data = ___
+  ta ~ day_night,
+  data = df
 )
 ```
 
@@ -449,7 +450,7 @@ t.test(
 Would you reject the null hypothesis at $\alpha = 0.05$?  
 What does the result imply about day vs night differences in your chosen variable?
 
-> *Write your answer here.*
+> *The p-value is < 2.2e-16, and the confidence interval is 5.573716 : 6.184308. I would reject the null hypothesis, due to the fact that the p-value is less than 0.05 and that the confidence interval does not include 0. This implies that the mean air temperature during the day in 2023 was different than the mean air temperature at night during 2023.*
 
 ---
 
@@ -461,8 +462,8 @@ Extract the confidence interval and interpret it as a difference in means.
 # GOAL: store the t-test result in an object.
 
 tt_daynight <- t.test(
-  ___ ~ ___,
-  data = ___
+  ta ~ day_night,
+  data = df
 )
 
 tt_daynight$conf.int
@@ -471,7 +472,7 @@ tt_daynight$conf.int
 **Prompt (2–3 sentences):** Does the confidence interval include 0?  
 How does that connect to the hypothesis test decision?
 
-> *Write your answer here.*
+> *My confidence interval does not include 0. If the confidence interval included 0 then it would mean that there is a possibility that there is 0 difference between the means of the group, meaning that we would not be able to reject the null hypothesis. Because it does not include 0, it indicates that there is a difference between the means of the two groups.*
 
 ---
 
@@ -480,18 +481,18 @@ How does that connect to the hypothesis test decision?
 Create bootstrap distributions of the **group means** for Day and Night separately.
 
 ```{r bootstrap_group_means, echo=TRUE, eval=FALSE}
-set.seed(___)
+set.seed(9999)
 
-B <- ___   # e.g., 2000
+B <- 3759   # e.g., 2000
 
 x_day <- df %>%
   filter(day_night == "Day") %>%
-  pull(___) %>%
+  pull(ta) %>%
   na.omit()
 
 x_night <- df %>%
   filter(day_night == "Night") %>%
-  pull(___) %>%
+  pull(ta) %>%
   na.omit()
 
 boot_day <- replicate(
@@ -514,7 +515,7 @@ boot_groups <- bind_rows(
 # GOAL: visualize the bootstrap distributions by group.
 
 ggplot(boot_groups, aes(x = mean_est, fill = group)) +
-  geom_histogram(alpha = 0.45, bins = ___, position = "identity") +
+  geom_histogram(alpha = 0.45, bins = 50, position = "identity") +
   theme_classic(base_size = 18) +
   labs(
     x = paste0("Bootstrap mean of ", response_var),
@@ -526,7 +527,7 @@ ggplot(boot_groups, aes(x = mean_est, fill = group)) +
 **Prompt (3–4 sentences):** How does this bootstrap visualization help you understand the t-test result?  
 Do the plausible group means strongly overlap, or are they clearly separated?
 
-> *Write your answer here.*
+> *My t.test results indicated that the means of my two groups are not equivalent, rejecting the null hypothesis. This visualization shows me two groups that have no overlap and centers that are separated by several degrees. This graph visually shows how the means differ by large margins.*
 
 ---
 
@@ -549,15 +550,17 @@ You must:
 
 df <- df %>%
   mutate(
-    my_group = ___
-  )
+    my_group = if_else(month %in% c("Nov", "Dec", "Jan", "Feb", "Mar", "Apr"), "Cold", "Warm"
+  ))
+
+view(df)
 
 df %>% count(my_group)
 ```
 
 **Prompt (2–3 sentences):** Why did you choose this grouping variable? What scientific contrast are you testing?
 
-> *Write your answer here.*
+> *I chose this variable to compare the coldest six months of the year with the warmest six months of the year. This is a test to determine whether the average air temperature in the coldest six months of the year 2023 is equivalent to the average air temperature in the warmest six months of the year 2023.*
 
 ---
 
@@ -573,26 +576,45 @@ Repeat the workflow:
 ```{r visualize_second_group, echo=TRUE, eval=FALSE}
 # GOAL: visualize your response by your chosen grouping variable.
 
-___
+ggplot(df, aes(x = my_group, y = ta, fill = my_group)) +
+  geom_boxplot(alpha = 0.8) +
+  theme_minimal() +
+  labs(
+    x = NULL,
+    y = response_var
+  )
 ```
 
 ```{r summarize_second_group, echo=TRUE, eval=FALSE}
 # GOAL: summarize your response variable by your chosen grouping variable.
 
-___
+group_summary <- df %>%
+  filter(!is.na(.data[[response_var]])) %>%
+  group_by(my_group) %>%
+  summarise(
+    mean_response = mean(.data[[response_var]]),
+    sd_response = sd(.data[[response_var]]),
+    n = n(),
+    .groups = "drop"
+  )
+
+group_summary
 ```
 
 ```{r ttest_second_group, echo=TRUE, eval=FALSE}
 # GOAL: run a two-sample t-test for your chosen grouping variable.
 
-___
+t.test(
+  ta ~ my_group,
+  data = df
+)
 ```
 
 **Prompt (5–6 sentences):** Compare the day/night t-test to your second grouping-variable test.  
 Which contrast was stronger? Which was more scientifically meaningful?  
 Did the two tests produce similar or different conclusions?
 
-> *Write your answer here.*
+> *The two tests resulted in the same level of significance, indicating similar contrast. Both results produced a p-value of < 2.2e-16, capping out R's p-value. Because of this I can say with high confidence that the mean are temperature of the warm and cold months are not equivalent, and the mean air temperature of night and day are not equivalent. When comparing the two tests I cannot say whether there is a greater contrast in means in one test over the other, due to the high level of contrast found in both tests. I can say that both comparisons had a high level of contrast between the two groups*
 
 ---
 
@@ -604,7 +626,7 @@ Answer in **4–6 sentences**:
 - What changes when we move from “testing one mean” to “testing a difference in means”?
 - How did the bootstrap group-mean plot help your understanding?
 
-> *Write your answer here.*
+> *The t-test is a test the null hypothesis that two means are equal, with rejecting the null being the two samples means differ from one another. The one mean test tests the null hypothesis that the true mean of a sample is equal to a predicted value, with rejecting the null stating that the true mean is not equal to that value. They are similar in that both tests are with respect to the mean of the group or groups being tested. Additionally they compare two values and determine if they are equal. In the case of the one mean test we are comparing the true mean to the predicted mean, and in the case of the t.test we are comparing the means of the two sample groups. When we move from the one mean test to the t.test we change what we are comparing, where the t.test are saying that the means of two groups are equal or not, in the one mean test we are saying that the mean of one group is equal or not to a predicted value. *
 
 ---
 
