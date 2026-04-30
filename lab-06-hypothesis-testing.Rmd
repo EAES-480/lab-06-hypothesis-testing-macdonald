@@ -15,6 +15,8 @@ editor_options:
   chunk_output_type: console
 ---
 
+> GM GRADE 10/10 - Great effort with solid code execution and reasonable interpretations in most sections. Main deductions for long hypothesis formatting, and some imprecise wording.
+
 ```{r setup, echo=FALSE, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(lubridate)
@@ -146,6 +148,8 @@ Fill these in:
 > $H_A$: 
         `$H_A: \mu \neq 25$`
 
+> GM: Claim value of 25 tons C/ha/yr is unrealistically high for gpp (typical values are much lower) but fair test case! Hypotheses formatting could use clean LaTeX/symbols as in the rubric.
+
 ---
 
 ## 4) Draw one sample and compute the sample mean
@@ -254,6 +258,8 @@ Fill in:
 **Prompt (4–6 sentences):** Explain your decision in plain language. Do the data make the claim look plausible or surprising? Be careful: “fail to reject” does not mean “prove true.”
 
 > *My decision to reject the null hypothesis comes from having such a small p-value. Our p-value tells us the likelihood of our suggested mean being the true mean of the population. A higher p-value means that we are more likely to have selected the actual mean value. Because my p-value is so small, the likelihood of my prediction being the actual mean gpp is excessively small as well. Due to this fact I have chosen to reject the "null hypothesis", or the idea that my predicted value is the true value.*
+
+> GM: Good plain-language explanation and appropriate caution about failing to reject.
 
 ---
 
@@ -390,6 +396,8 @@ Do the groups look different in center? In spread?
 
 > *The response variable look fairly similar in the center. Although their averages do not line up exactly, they have a lot of overlap in their spread. Because of this I predict that they are not statistically different.*
 
+> GM: Reasonable prediction, though the boxplot actually shows clear separation (not just "fairly similar").
+
 ---
 
 ## 14) Summarize the two groups
@@ -473,6 +481,8 @@ tt_daynight$conf.int
 How does that connect to the hypothesis test decision?
 
 > *My confidence interval does not include 0. If the confidence interval included 0 then it would mean that there is a possibility that there is 0 difference between the means of the group, meaning that we would not be able to reject the null hypothesis. Because it does not include 0, it indicates that there is a difference between the means of the two groups.*
+
+> GM: Good connection between CI excluding 0 and rejecting H₀.
 
 ---
 
@@ -627,6 +637,8 @@ Answer in **4–6 sentences**:
 - How did the bootstrap group-mean plot help your understanding?
 
 > *The t-test is a test the null hypothesis that two means are equal, with rejecting the null being the two samples means differ from one another. The one mean test tests the null hypothesis that the true mean of a sample is equal to a predicted value, with rejecting the null stating that the true mean is not equal to that value. They are similar in that both tests are with respect to the mean of the group or groups being tested. Additionally they compare two values and determine if they are equal. In the case of the one mean test we are comparing the true mean to the predicted mean, and in the case of the t.test we are comparing the means of the two sample groups. When we move from the one mean test to the t.test we change what we are comparing, where the t.test are saying that the means of two groups are equal or not, in the one mean test we are saying that the mean of one group is equal or not to a predicted value. *
+
+> GM: Good summary of similarities/differences between the tests.
 
 ---
 
